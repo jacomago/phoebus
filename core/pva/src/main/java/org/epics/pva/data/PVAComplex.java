@@ -26,26 +26,26 @@ class PVAComplex
     public static final byte UNION          = 0b001;
     public static final byte STRUCTURE      = 0b000;
 
-    public static PVAData decodeType(final PVATypeRegistry types, final String name, final byte field_desc, final ByteBuffer buffer) throws Exception
+    public static PVAData decodeType(final PVATypeRegistry types, final String name, final byte field_desc, final ByteBuffer buffer) throws DecodePVAException
     {
         final PVAFieldDesc.Array array = PVAFieldDesc.Array.forFieldDesc(field_desc);
 
         final byte cplx = (byte) (field_desc & 0b00000111);
         if (cplx == BOUNDED_STRING)
-            throw new Exception("Cannot handle bounded string '" + name + "'");
+            throw new DecodeCannotHandleException("bounded", "string", name);
         else if (cplx == VARIANT_UNION)
         {
             if (array == PVAFieldDesc.Array.SCALAR)
                 return new PVAny(name);
             else if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
                 return new PVAAnyArray(name);
-            throw new Exception("Cannot handle " + array + " any '" + name + "'"); //
+            throw new DecodeCannotHandleException(array, "any", name);
         }
         else if (cplx == UNION)
         {
             if (array == PVAFieldDesc.Array.SCALAR)
                 return PVAUnion.decodeType(types, name, buffer);
-            throw new Exception("Cannot handle " + array + " union '" + name + "'");
+            throw new DecodeCannotHandleException(array, "union", name);
         }
         else if (cplx == STRUCTURE)
         {
@@ -53,9 +53,9 @@ class PVAComplex
                 return PVAStructure.decodeType(types, name, buffer);
             else if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
                 return PVAStructureArray.decodeType(types, name, buffer);
-            throw new Exception("Cannot handle " + array + " structure '" + name + "'");
+            throw new DecodeCannotHandleException(array, "structure", name);
         }
 
-        throw new Exception("Unknown 'complex' type " + String.format("%02X ", field_desc) + " '" + name + "'");
+        throw new UnknownPVATypeException(field_desc, name);
     }
 }

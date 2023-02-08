@@ -66,7 +66,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
     }
 
     @Override
-    public void setValue(Object new_value) throws Exception {
+    public void setValue(Object new_value) throws IncompatibleTypesException {
         if (new_value instanceof PVAAnyArray)
         {
             PVAAnyArray newValueArray = (PVAAnyArray) new_value;
@@ -76,7 +76,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
         else if (new_value instanceof PVAny[])
             set(((PVAny[]) new_value));
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     /** @return Current value */
@@ -101,7 +101,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception {
+    public void encodeType(ByteBuffer buffer, BitSet described) {
         final short type_id = getTypeID();
         if (type_id != 0) {
             final int u_type_id = Short.toUnsignedInt(type_id);
@@ -125,7 +125,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
     }
 
     @Override
-    public void decode(PVATypeRegistry types, ByteBuffer buffer) throws Exception {
+    public void decode(PVATypeRegistry types, ByteBuffer buffer) throws DecodePVAException {
 
         final int count = PVASize.decodeSize(buffer);
         // Try to re-use elements
@@ -151,7 +151,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
     }
 
     @Override
-    public void encode(ByteBuffer buffer) throws Exception {
+    public void encode(ByteBuffer buffer) throws EncodePVAException {
 
         final PVAny[] copy = elements;
         PVASize.encodeSize(copy.length, buffer);
@@ -166,7 +166,7 @@ public class PVAAnyArray extends PVADataWithID implements PVAArray{
     }
 
     @Override
-    protected int update(int index, PVAData new_value, BitSet changes) throws Exception {
+    protected int update(int index, PVAData new_value, BitSet changes) {
 
         if (new_value instanceof PVAAnyArray)
         {

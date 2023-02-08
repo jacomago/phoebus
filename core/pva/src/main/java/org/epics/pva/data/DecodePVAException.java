@@ -20,19 +20,14 @@
 package org.epics.pva.data;
 
 /**
- * Exception for when updating a PVAStructure array with a value that
- * includes a PVAStructure which does not match the element type of the array.
+ * Exception to be raised when trying to decode byte code.
  */
-public class ElementTypeException extends UpdateValueException {
+class DecodePVAException extends Exception {
+    DecodePVAException(String message) {
+        super(message);
+    }
 
-    /**
-     * Constructor returns an exception with a message based on the
-     * new Element type and the current element type.
-     *
-     * @param newElementType New invalid element type
-     * @param elementType Current valid element type
-     */
-    public ElementTypeException(PVAStructure newElementType, PVAStructure elementType) {
-        super("Element " + newElementType + " must be of type " + elementType);
+    <PVA extends PVAData> DecodePVAException(Class<PVA> pvaClass, byte fieldDesc, String name, PVAFieldDesc.Array array) {
+        super("Cannot decode " + pvaClass.getSimpleName() + " encoding " + String.format("%02X ", fieldDesc) + ", " + array);
     }
 }

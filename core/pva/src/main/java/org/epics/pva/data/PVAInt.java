@@ -19,8 +19,7 @@ public class PVAInt extends PVANumber
     /** Type descriptor */
     public static final byte FIELD_DESC_TYPE = (byte)0b00100000;
 
-    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws Exception
-    {
+    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws DecodePVAException {
         final PVAFieldDesc.Array array = PVAFieldDesc.Array.forFieldDesc(field_desc);
         final boolean unsigned = (field_desc & 0b100) != 0;
         final byte actual = (byte) (field_desc & 0b11);
@@ -31,27 +30,27 @@ public class PVAInt extends PVANumber
                 return new PVALongArray(name, unsigned);
             if (array == PVAFieldDesc.Array.SCALAR)
                 return new PVALong(name, unsigned);
-            throw new Exception("Cannot handle long " + array);
+            throw new DecodePVAException(PVALong.class, field_desc, name, array);
         case 2:
             if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
                 return new PVAIntArray(name, unsigned);
             else if (array == PVAFieldDesc.Array.SCALAR)
                 return new PVAInt(name, unsigned);
-            throw new Exception("Cannot handle int " + array);
+            throw new DecodePVAException(PVAInt.class, field_desc, name, array);
         case 1:
             if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
                 return new PVAShortArray(name, unsigned);
             else if (array == PVAFieldDesc.Array.SCALAR)
                 return new PVAShort(name, unsigned);
-            throw new Exception("Cannot handle short " + array);
+            throw new DecodePVAException(PVAShort.class, field_desc, name, array);
         case 0:
             if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
                 return new PVAByteArray(name, unsigned);
             else if (array == PVAFieldDesc.Array.SCALAR)
                 return new PVAByte(name, unsigned);
-                throw new Exception("Cannot handle byte " + array);
+                throw new DecodePVAException(PVAByte.class, field_desc, name, array);
         default:
-            throw new Exception("Cannot decode integer encoding " + String.format("%02X ", field_desc));
+            throw new DecodePVAException(PVAInt.class, field_desc, name, array);
         }
     }
 
@@ -116,8 +115,7 @@ public class PVAInt extends PVANumber
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws ParsePVANumberException, IncompatibleTypesException {
         if (new_value instanceof PVANumber)
             set(((PVANumber) new_value).getNumber().intValue());
         else if (new_value instanceof Number)
@@ -125,7 +123,7 @@ public class PVAInt extends PVANumber
         else if (new_value instanceof String)
             set(parseString(new_value.toString()).intValue());
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -141,7 +139,7 @@ public class PVAInt extends PVANumber
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         if (unsigned)
             buffer.put((byte) 0b00100110);
@@ -150,19 +148,19 @@ public class PVAInt extends PVANumber
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = buffer.getInt();
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         buffer.putInt(value);
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAInt)
         {

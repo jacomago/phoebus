@@ -20,19 +20,11 @@
 package org.epics.pva.data;
 
 /**
- * Exception for when updating a PVAStructure array with a value that
- * includes a PVAStructure which does not match the element type of the array.
+ * {@link DecodePVAException} when the PVAType cannot be resolved.
  */
-public class ElementTypeException extends UpdateValueException {
+public class UnknownPVATypeException extends DecodePVAException {
 
-    /**
-     * Constructor returns an exception with a message based on the
-     * new Element type and the current element type.
-     *
-     * @param newElementType New invalid element type
-     * @param elementType Current valid element type
-     */
-    public ElementTypeException(PVAStructure newElementType, PVAStructure elementType) {
-        super("Element " + newElementType + " must be of type " + elementType);
+    public UnknownPVATypeException(byte field_desc, String name) {
+        super("Unknown 'complex' type " + String.format("%02X ", field_desc) + " '" + name + "'");
     }
 }

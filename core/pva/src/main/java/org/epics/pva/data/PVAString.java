@@ -62,15 +62,14 @@ public class PVAString extends PVAData implements PVAValue
         return null;
     }
 
-    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws Exception
-    {
+    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws DecodePVAException {
         final PVAFieldDesc.Array array = PVAFieldDesc.Array.forFieldDesc(field_desc);
         if (array == PVAFieldDesc.Array.SCALAR)
             return new PVAString(name);
         else if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
             return new PVAStringArray(name);
         else
-            throw new Exception("Cannot handle " + array);
+            throw new DecodePVAException(PVAString.class, field_desc, name, array);
     }
 
     private volatile String value;
@@ -103,7 +102,7 @@ public class PVAString extends PVAData implements PVAValue
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
+    public void setValue(final Object new_value)
     {
         if (new_value instanceof PVAString)
             set(((PVAString) new_value).get());
@@ -124,25 +123,25 @@ public class PVAString extends PVAData implements PVAValue
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         buffer.put(FIELD_DESC_TYPE);
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = decodeString(buffer);
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         encodeString(value, buffer);
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAString)
         {

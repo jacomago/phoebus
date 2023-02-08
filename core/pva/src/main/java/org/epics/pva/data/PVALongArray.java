@@ -54,8 +54,7 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws IncompatibleTypesException {
         if (new_value instanceof PVALongArray)
         {
             final long[] other = ((PVALongArray) new_value).value;
@@ -78,12 +77,12 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
                 if (item instanceof Number)
                     new_items[i] = ((Number)item).longValue();
                 else
-                    throw new Exception("Cannot set " + formatType() + " to " + new_value);
+                    throw new IncompatibleTypesException(this, new_value);
             }
             value = new_items;
         }
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -99,7 +98,7 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         if (unsigned)
             buffer.put((byte) 0b00101111);
@@ -108,7 +107,7 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         final int size = PVASize.decodeSize(buffer);
         final long[] new_value = new long[size];
@@ -118,7 +117,7 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         final long[] copy = value;
         PVASize.encodeSize(copy.length, buffer);
@@ -127,7 +126,7 @@ public class PVALongArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVALongArray)
         {

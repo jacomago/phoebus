@@ -48,8 +48,7 @@ import java.util.logging.Level;
 @SuppressWarnings("nls")
 public class PVAStructure extends PVADataWithID
 {
-    static PVAStructure decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws Exception
-    {
+    static PVAStructure decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws DecodePVAException {
         final String struct_name = PVAString.decodeString(buffer);
 
         // number of elements
@@ -104,15 +103,15 @@ public class PVAStructure extends PVADataWithID
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
+    public void setValue(final Object new_value) throws UpdateValueException
     {
         if (! (new_value instanceof PVAStructure))
-            throw new Exception("Cannot set " + getStructureName() + " " + name + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
 
         final PVAStructure other = (PVAStructure) new_value;
         final int N = elements.size();
         if (other.elements.size() != N)
-            throw new Exception("Incompatible structures, got " + other.elements.size() + " elements but expected " + N);
+            throw new IncompatibleTypesException(this, new_value);
         for (int i=0; i<N; ++i)
             elements.get(i).setValue(other.elements.get(i));
     }
@@ -147,8 +146,7 @@ public class PVAStructure extends PVADataWithID
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
-    {
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException {
         decodeElements(types, buffer);
     }
 
@@ -165,10 +163,9 @@ public class PVAStructure extends PVADataWithID
      *  @param changes Bits to decode (will not be modified)
      *  @param types Type registry
      *  @param buffer Buffer from which to read structure elements
-     *  @throws Exception on error
+     *  @throws DecodePVAException on error
      */
-    public void decodeElements(final BitSet changes, final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
-    {
+    public void decodeElements(final BitSet changes, final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException {
         logger.log(Level.FINER, () -> "Structure elements to decode: " + changes);
         // Preserve 'changes', operate with copy
         final BitSet to_decode = (BitSet) changes.clone();
@@ -211,10 +208,9 @@ public class PVAStructure extends PVADataWithID
      *  @param types Type registry
      *  @param buffer Buffer, positioned on value
      *  @return Deep count of decoded elements
-     *  @throws Exception on error
+     *  @throws DecodePVAException on error
      */
-    private int decodeElements(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
-    {
+    private int decodeElements(final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException {
         logger.log(Level.FINEST, () -> "Decoding structure " + getStructureName() + " " + getName());
         int count = 0;
         for (PVAData element : elements)
@@ -239,15 +235,13 @@ public class PVAStructure extends PVADataWithID
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
-    {
+    public void encode(final ByteBuffer buffer) throws EncodePVAException {
         for (PVAData element : elements)
             element.encode(buffer);
     }
 
     @Override
-    public void encodeType(final ByteBuffer buffer, final BitSet described) throws Exception
-    {
+    public void encodeType(final ByteBuffer buffer, final BitSet described) throws EncodePVAException {
         final short type_id = getTypeID();
         if (type_id != 0)
         {
@@ -311,11 +305,10 @@ public class PVAStructure extends PVADataWithID
     *  @param dot_path "element.sub-element.sub-sub-element.final"
     *  @return Located "final" element
     *  @param <PVA> PVAData or subclass
-     * @throws Exception on error, for example a sub-element
+     * @throws PVAStructureLocateException on error, for example a sub-element
      *         that is not a structure and prevents further descent.
     */
-    public <PVA extends PVAData> PVA locate(final String dot_path) throws Exception
-    {
+    public <PVA extends PVAData> PVA locate(final String dot_path) throws PVAStructureLocateException {
         PVAStructure sub = this;
         int start = 0;
         while (start < dot_path.length())
@@ -326,22 +319,22 @@ public class PVAStructure extends PVADataWithID
                 final String element = dot_path.substring(start);
                 final PVA found = sub.get(element);
                 if (found == null)
-                    throw new Exception("Cannot locate '" + element + "' for '" + dot_path + "'");
+                    throw new PVAStructureLocateException(element, dot_path);
                 return found;
             }
             final String element = dot_path.substring(start, dot);
             if (element.isEmpty())
-                throw new Exception("Empty path element in '" + dot_path + "'");
+                throw new PVAStructureLocateException("Empty path element in '" + dot_path + "'");
             final PVAData sub_element = sub.get(element);
             if (sub_element == null)
-                throw new Exception("Cannot locate '" + element + "' for '" + dot_path + "'");
+                throw new PVAStructureLocateException(element, dot_path);
             if (! (sub_element instanceof PVAStructure))
-                throw new Exception("Element '" + element + "' of '" + dot_path + "' is not a structure");
+                throw new PVAStructureLocateException("Element '" + element + "' of '" + dot_path + "' is not a structure");
             sub = (PVAStructure) sub_element;
 
             start = dot + 1;
         }
-        throw new Exception("Cannot locate '" + dot_path + "'");
+        throw new PVAStructureLocateException("Cannot locate '" + dot_path + "'");
     }
 
     /** Get structure element by index
@@ -428,16 +421,15 @@ public class PVAStructure extends PVADataWithID
      *
      *  @param element Structure element to locate
      *  @return Index of that element
-     *  @throws Exception on error, including element not found
+     *  @throws CannotLocateException on error, including element not found
      *  @see #get(int)
      */
-    public int getIndex(final PVAData element) throws Exception
+    public int getIndex(final PVAData element) throws CannotLocateException
     {
         final int index = getIndexOrNext(0, element);
         if (index >= 0)
             return index;
-        throw new Exception("Cannot locate " + element.formatType() +
-                            " in " + getStructureName() + " " + getName());
+        throw new CannotLocateException(element.formatType(), getStructureName(), getName());
     }
 
     /** Locate element, recursing into sub-structures
@@ -482,25 +474,23 @@ public class PVAStructure extends PVADataWithID
      *
      *  @param new_value Update data
      *  @return {@link BitSet} of updated element indices
-     *  @throws Exception on error
+     *  @throws UpdateValueException on error
      */
-    public BitSet update(final PVAStructure new_value) throws Exception
-    {
+    public BitSet update(final PVAStructure new_value) throws UpdateValueException {
         final BitSet changes = new BitSet();
         update(0, new_value, changes);
         return changes;
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
-    {
+    protected int update(final int index, final PVAData new_value, final BitSet changes) throws UpdateValueException {
         if (! (new_value instanceof PVAStructure))
-            throw new Exception("Cannot set " + getStructureName() + " " + name + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
 
         final PVAStructure other = (PVAStructure) new_value;
         final int N = elements.size();
         if (other.elements.size() != N)
-            throw new Exception("Incompatible structures, got " + other.elements.size() + " elements but expected " + N);
+            throw new IncompatibleTypesException(this, new_value);
         if (N <= 0)
             return index;
 

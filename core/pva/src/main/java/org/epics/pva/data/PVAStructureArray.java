@@ -30,11 +30,10 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
      *  @return Decoded structure array
      *  @throws Exception on error
      */
-    public static PVAStructureArray decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws Exception
-    {
+    public static PVAStructureArray decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws DecodePVAException {
         final PVAData element_type = types.decodeType("", buffer);
         if (! (element_type instanceof PVAStructure))
-            throw new Exception("Expected structure for element type of structure[] '" + name + "', got " + element_type);
+            throw new DecodePVAException("Expected structure for element type of structure[] '" + name + "', got " + element_type);
 
         return new PVAStructureArray(name, (PVAStructure) element_type);
     }
@@ -86,7 +85,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
+    public void setValue(final Object new_value) throws UpdateValueException
     {
         if (new_value instanceof PVAStructureArray)
         {
@@ -101,7 +100,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
         else if (new_value instanceof PVAStructure[])
             set(((PVAStructure[]) new_value));
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     /** @return Structure type name */
@@ -128,8 +127,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
     }
 
     @Override
-    public void encodeType(final ByteBuffer buffer, final BitSet described) throws Exception
-    {
+    public void encodeType(final ByteBuffer buffer, final BitSet described) throws EncodePVAException {
         final short type_id = getTypeID();
         if (type_id != 0)
         {
@@ -155,8 +153,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
-    {
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException {
         final int count = PVASize.decodeSize(buffer);
         // Try to re-use elements
         PVAStructure[] new_elements = elements;
@@ -181,8 +178,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
-    {
+    public void encode(final ByteBuffer buffer) throws EncodePVAException {
         final PVAStructure[] copy = elements;
         PVASize.encodeSize(copy.length, buffer);
         for (int i=0; i<copy.length; ++i)
@@ -198,7 +194,7 @@ public class PVAStructureArray extends PVADataWithID implements PVAArray
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAStructureArray)
         {

@@ -35,7 +35,7 @@ public class PVATypeRegistry
      *  @return PVAData
      *  @throws Exception on error
      */
-    public PVAData decodeType(final String name, final ByteBuffer buffer) throws Exception
+    public PVAData decodeType(final String name, final ByteBuffer buffer) throws DecodePVAException
     {
         final byte field_desc = buffer.get();
 
@@ -70,7 +70,7 @@ public class PVATypeRegistry
             final short type_id = buffer.getShort();
             final PVAData type = types.get(type_id);
             if (type == null)
-                throw new Exception("Unknown FieldDesc Type ID " + type_id);
+                throw new UnknownTypeIDException(type_id);
             if (type instanceof PVADataWithID)
                 ((PVADataWithID)type).setTypeID(type_id);
             logger.log(Level.FINEST, "Re-using Type ID " + type_id);
@@ -93,6 +93,6 @@ public class PVATypeRegistry
                 return PVABool.decodeType(name, field_desc, buffer);
         }
 
-        throw new Exception("Cannot decode " + name + " FieldDesc 0x" + String.format("%02X ", field_desc));
+        throw new UnknownPVATypeException(field_desc, name);
     }
 }

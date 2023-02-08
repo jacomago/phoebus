@@ -23,16 +23,15 @@ public class PVABool extends PVAData implements PVAValue
      *  @param field_desc  Field description
      *  @param buffer Source buffer
      *  @return Decoded PVABool or PVABoolArray
-     *  @throws Exception on error
+     *  @throws DecodePVAException on error
      */
-    public static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws Exception
-    {
+    public static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws DecodePVAException {
         final PVAFieldDesc.Array array = PVAFieldDesc.Array.forFieldDesc(field_desc);
         if (array == PVAFieldDesc.Array.SCALAR)
             return new PVABool(name);
         else if (array == PVAFieldDesc.Array.VARIABLE_SIZE)
             return new PVABoolArray(name);
-        throw new Exception("Cannot handle " + array);
+        throw new DecodePVAException(PVABool.class, field_desc, name, array);
     }
 
     private volatile boolean value;
@@ -65,7 +64,7 @@ public class PVABool extends PVAData implements PVAValue
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
+    public void setValue(final Object new_value) throws UpdateValueException
     {
         if (new_value instanceof PVABool)
             set(((PVABool) new_value).get());
@@ -78,7 +77,7 @@ public class PVABool extends PVAData implements PVAValue
         else if (new_value instanceof String)
             set(Boolean.parseBoolean(new_value.toString().toLowerCase()));
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class PVABool extends PVAData implements PVAValue
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         buffer.put(FIELD_DESC_TYPE);
     }
@@ -116,7 +115,7 @@ public class PVABool extends PVAData implements PVAValue
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = decodeBoolean(buffer);
     }
@@ -128,7 +127,7 @@ public class PVABool extends PVAData implements PVAValue
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVABool)
         {

@@ -54,8 +54,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws IncompatibleTypesException {
         if (new_value instanceof PVAByteArray)
         {
             final byte[] other = ((PVAByteArray) new_value).value;
@@ -78,7 +77,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
                 if (item instanceof Number)
                     new_items[i] = ((Number)item).byteValue();
                 else
-                    throw new Exception("Cannot set " + formatType() + " to " + new_value);
+                    throw new IncompatibleTypesException(this, new_value);
             }
             value = new_items;
         }
@@ -86,7 +85,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
             set(((String)new_value).getBytes());
         }
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -102,7 +101,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         if (unsigned)
             buffer.put((byte) 0b00101100);
@@ -111,7 +110,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         final int size = PVASize.decodeSize(buffer);
         final byte[] new_value = new byte[size];
@@ -120,7 +119,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         final byte[] copy = value;
         PVASize.encodeSize(copy.length, buffer);
@@ -129,7 +128,7 @@ public class PVAByteArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAByteArray)
         {

@@ -19,8 +19,7 @@ public class PVAFloat extends PVANumber
     /** Type descriptor */
     public static final byte FIELD_DESC_TYPE = (byte)0b01000000;
 
-    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws Exception
-    {
+    static PVAData decodeType(final String name, final byte field_desc, final ByteBuffer buffer) throws DecodePVAException {
         final PVAFieldDesc.Array array = PVAFieldDesc.Array.forFieldDesc(field_desc);
 
         final byte size = (byte) (field_desc & 0b111);
@@ -39,7 +38,7 @@ public class PVAFloat extends PVANumber
                 return new PVAFloatArray(name);
         }
 
-        throw new Exception("Cannot decode floating point encoding " + String.format("%02X ", field_desc) + ", " + array);
+        throw new DecodePVAException(PVAFloat.class, field_desc, name, array);
     }
 
     private volatile float value;
@@ -78,7 +77,7 @@ public class PVAFloat extends PVANumber
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
+    public void setValue(final Object new_value) throws UpdateValueException
     {
         if (new_value instanceof PVANumber)
             set(((PVANumber) new_value).getNumber().floatValue());
@@ -87,7 +86,7 @@ public class PVAFloat extends PVANumber
         else if (new_value instanceof String)
             set(parseString(new_value.toString()).floatValue());
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -103,25 +102,25 @@ public class PVAFloat extends PVANumber
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         buffer.put((byte) 0b01000010);
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = buffer.getFloat();
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         buffer.putFloat(value);
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAFloat)
         {

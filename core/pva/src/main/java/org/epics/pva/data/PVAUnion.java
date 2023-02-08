@@ -28,7 +28,7 @@ import java.util.logging.Level;
 @SuppressWarnings("nls")
 public class PVAUnion extends PVADataWithID
 {
-    static PVAUnion decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws Exception
+    static PVAUnion decodeType(final PVATypeRegistry types, final String name, final ByteBuffer buffer) throws DecodePVAException
     {
         final String union_name = PVAString.decodeString(buffer);
 
@@ -127,8 +127,7 @@ public class PVAUnion extends PVADataWithID
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws UpdateValueException {
         elements.get(selected).setValue(new_value);
     }
 
@@ -162,7 +161,7 @@ public class PVAUnion extends PVADataWithID
     }
 
     @Override
-    public void encodeType(final ByteBuffer buffer, final BitSet described) throws Exception
+    public void encodeType(final ByteBuffer buffer, final BitSet described) throws EncodePVAException
     {
         final short type_id = getTypeID();
         if (type_id != 0)
@@ -197,7 +196,7 @@ public class PVAUnion extends PVADataWithID
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException
     {
         selected = PVASize.decodeSize(buffer);
         if (selected < 0)
@@ -206,14 +205,14 @@ public class PVAUnion extends PVADataWithID
             return;
         }
         if (selected < 0  ||  selected >= elements.size())
-            throw new Exception("Invalid union selector " + selected + " for " + formatType());
+            throw new DecodePVAException("Invalid union selector " + selected + " for " + formatType());
         final PVAData element = elements.get(selected);
         logger.log(Level.FINER, () -> "Getting data for union element " + selected + ": " + element.formatType());
         element.decode(types, buffer);
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer) throws EncodePVAException
     {
         final int safe_sel = selected;
         // What's selected might now change, we encode what was in safe_sel
@@ -223,7 +222,7 @@ public class PVAUnion extends PVADataWithID
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes) throws UpdateValueException
     {
         if (new_value instanceof PVAUnion)
         {
@@ -231,7 +230,7 @@ public class PVAUnion extends PVADataWithID
             if (! Objects.equals(other.get(), get()))
             {
                 if (other.elements.size() != elements.size())
-                    throw new Exception("Incompatible unions");
+                    throw new IncompatibleTypesException(this, new_value);
                 selected = other.selected;
                 if (selected > 0)
                     elements.get(selected).setValue(other.get());

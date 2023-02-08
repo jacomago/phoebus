@@ -20,19 +20,12 @@
 package org.epics.pva.data;
 
 /**
- * Exception for when updating a PVAStructure array with a value that
- * includes a PVAStructure which does not match the element type of the array.
+ * Exception to handle setting values or updates where types of pvAccess data
+ * are incompatible. Returns in error message the type of current value and
+ * type of update.
  */
-public class ElementTypeException extends UpdateValueException {
-
-    /**
-     * Constructor returns an exception with a message based on the
-     * new Element type and the current element type.
-     *
-     * @param newElementType New invalid element type
-     * @param elementType Current valid element type
-     */
-    public ElementTypeException(PVAStructure newElementType, PVAStructure elementType) {
-        super("Element " + newElementType + " must be of type " + elementType);
+public class IncompatibleTypesException extends UpdateValueException {
+    public IncompatibleTypesException(PVAData currentType, Object newValue) {
+        super("Incompatible types, current " + currentType.formatType() + ", input object " + newValue);
     }
 }

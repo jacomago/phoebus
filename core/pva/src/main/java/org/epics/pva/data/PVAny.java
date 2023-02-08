@@ -50,12 +50,11 @@ public class PVAny extends PVAData
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws IncompatibleTypesException {
         if (new_value == null  ||  new_value instanceof PVAData)
             value = (PVAData) new_value;
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -74,14 +73,13 @@ public class PVAny extends PVAData
     }
 
     @Override
-    public void encodeType(final ByteBuffer buffer, final BitSet described) throws Exception
+    public void encodeType(final ByteBuffer buffer, final BitSet described)
     {
         buffer.put((byte) (PVAComplex.FIELD_DESC_TYPE | PVAComplex.VARIANT_UNION));
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
-    {
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws DecodePVAException {
         // Determine what the actual type is
         value = types.decodeType("any", buffer);
         // Unless it's the NULL_TYPE_CODE, decode value
@@ -90,8 +88,7 @@ public class PVAny extends PVAData
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
-    {
+    public void encode(final ByteBuffer buffer) throws EncodePVAException {
         if (value == null)
             buffer.put(PVAFieldDesc.NULL_TYPE_CODE);
         else
@@ -103,7 +100,7 @@ public class PVAny extends PVAData
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAny)
         {

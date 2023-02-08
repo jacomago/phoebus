@@ -24,8 +24,7 @@ abstract public class PVANumber extends PVAData implements PVAValue
      *  @return Number
      *  @throws Exception on error
      */
-    protected static Number parseString(String text) throws Exception
-    {
+    protected static Number parseString(String text) throws ParsePVANumberException {
         text = text.trim();
         // Try long first to handle large quantities,
         // but fails when number contains '.' or 'e'
@@ -60,7 +59,7 @@ abstract public class PVANumber extends PVAData implements PVAValue
         }
         catch (NumberFormatException ex)
         {
-            throw new Exception("Cannot parse number from '" + text + "'");
+            throw new ParsePVANumberException(text);
         }
     }
 

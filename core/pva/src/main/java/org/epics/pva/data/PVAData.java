@@ -48,9 +48,9 @@ public abstract class PVAData
      *  generally are.
      *
      *  @param new_value New value for this data item
-     *  @throws Exception on error, including incompatible data type
+     *  @throws UpdateValueException on error, including incompatible data type
      */
-    public abstract void setValue(Object new_value) throws Exception;
+    public abstract void setValue(Object new_value) throws UpdateValueException;
 
     /** @param name Name for the cloned item
      *  @return A clone of this type, with requested name, not cloning the data
@@ -63,22 +63,22 @@ public abstract class PVAData
     /** Encode type description
      *  @param buffer Buffer where type info is added
      *  @param described Bitset of already detailed complex types
-     *  @throws Exception on error
+     *  @throws EncodePVAException on error
      */
-    public abstract void encodeType(ByteBuffer buffer, BitSet described) throws Exception;
+    public abstract void encodeType(ByteBuffer buffer, BitSet described) throws EncodePVAException;
 
     /** Decode value for this {@link PVAData}
      *  @param types Type registry
      *  @param buffer Buffer, positioned on value
-     *  @throws Exception on error
+     *  @throws DecodePVAException on error
      */
-    public abstract void decode(PVATypeRegistry types, ByteBuffer buffer) throws Exception;
+    public abstract void decode(PVATypeRegistry types, ByteBuffer buffer) throws DecodePVAException;
 
     /** Encode value of this {@link PVAData}
      *  @param buffer Buffer, positioned where value should be written
-     *  @throws Exception on error
+     *  @throws EncodePVAException on error
      */
-    public abstract void encode(ByteBuffer buffer) throws Exception;
+    public abstract void encode(ByteBuffer buffer) throws EncodePVAException;
 
     /** Update this data item with new value
      *
@@ -86,9 +86,9 @@ public abstract class PVAData
      *  @param new_value New value for this item
      *  @param changes Bitset where changes are accumulated
      *  @return Next element index
-     *  @throws Exception on error
+     *  @throws UpdateValueException on error
      */
-    protected abstract int update(int index, PVAData new_value, BitSet changes) throws Exception;
+    protected abstract int update(int index, PVAData new_value, BitSet changes) throws UpdateValueException;
 
     /** Format the type with indentation
      *  @param level Indentation level

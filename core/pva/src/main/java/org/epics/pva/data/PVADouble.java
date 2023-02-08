@@ -52,8 +52,7 @@ public class PVADouble extends PVANumber
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws ParsePVANumberException, IncompatibleTypesException {
         if (new_value instanceof PVANumber)
             set(((PVANumber) new_value).getNumber().doubleValue());
         else if (new_value instanceof Number)
@@ -61,7 +60,7 @@ public class PVADouble extends PVANumber
         else if (new_value instanceof String)
                 set(parseString(new_value.toString()).doubleValue());
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -77,25 +76,25 @@ public class PVADouble extends PVANumber
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         buffer.put((byte) 0b01000011);
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = buffer.getDouble();
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         buffer.putDouble(value);
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVADouble)
         {

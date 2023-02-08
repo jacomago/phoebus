@@ -46,8 +46,7 @@ public class PVAStringArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws IncompatibleTypesException {
         if (new_value instanceof PVAStringArray)
         {
             final String[] other = ((PVAStringArray) new_value).value;
@@ -64,7 +63,7 @@ public class PVAStringArray extends PVAData implements PVAArray, PVAValue
                 value[i] = Objects.toString(list.get(i));
         }
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -80,13 +79,13 @@ public class PVAStringArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         buffer.put((byte) (PVAString.FIELD_DESC_TYPE | PVAFieldDesc.Array.VARIABLE_SIZE.mask));
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         final int size = PVASize.decodeSize(buffer);
         String[] new_value = value;
@@ -98,7 +97,7 @@ public class PVAStringArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         final String[] copy = value;
         PVASize.encodeSize(copy.length, buffer);
@@ -107,7 +106,7 @@ public class PVAStringArray extends PVAData implements PVAArray, PVAValue
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAStringArray)
         {

@@ -63,8 +63,7 @@ public class PVAShort extends PVANumber
     }
 
     @Override
-    public void setValue(final Object new_value) throws Exception
-    {
+    public void setValue(final Object new_value) throws ParsePVANumberException, IncompatibleTypesException {
         if (new_value instanceof PVANumber)
             set(((PVANumber) new_value).getNumber().shortValue());
         else if (new_value instanceof Number)
@@ -72,7 +71,7 @@ public class PVAShort extends PVANumber
         else if (new_value instanceof String)
             set(parseString(new_value.toString()).shortValue());
         else
-            throw new Exception("Cannot set " + formatType() + " to " + new_value);
+            throw new IncompatibleTypesException(this, new_value);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class PVAShort extends PVANumber
     }
 
     @Override
-    public void encodeType(ByteBuffer buffer, BitSet described) throws Exception
+    public void encodeType(ByteBuffer buffer, BitSet described)
     {
         if (unsigned)
             buffer.put((byte) 0b00100101);
@@ -97,19 +96,19 @@ public class PVAShort extends PVANumber
     }
 
     @Override
-    public void decode(final PVATypeRegistry types, final ByteBuffer buffer) throws Exception
+    public void decode(final PVATypeRegistry types, final ByteBuffer buffer)
     {
         value = buffer.getShort();
     }
 
     @Override
-    public void encode(final ByteBuffer buffer) throws Exception
+    public void encode(final ByteBuffer buffer)
     {
         buffer.putShort(value);
     }
 
     @Override
-    protected int update(final int index, final PVAData new_value, final BitSet changes) throws Exception
+    protected int update(final int index, final PVAData new_value, final BitSet changes)
     {
         if (new_value instanceof PVAShort)
         {
