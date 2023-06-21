@@ -20,13 +20,16 @@ package org.epics.pva.combined;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.net.InetAddress;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -236,6 +239,7 @@ public class ServerClientTest {
         PVAStructure testPV = buildPVAStructure(pvName, instant, fakeData, pvDescription);
 
         HashMap<Instant, PVAData> sentData = new HashMap<>();
+        assert testPV != null;
         sentData.put(instant, testPV.get(PVAScalar.VALUE_NAME_STRING));
 
         assert server != null;
@@ -259,6 +263,12 @@ public class ServerClientTest {
             fail(e.getMessage());
         }
         try {
+            assertEquals(InetAddress.getLocalHost().getHostAddress(), channel.getRemoteAddress().getAddress().getHostAddress());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail(e.getMessage());
+        }
+        try {
             channel.subscribe(pvDescription, listener);
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,7 +283,6 @@ public class ServerClientTest {
         }
     
         for (S input : inputData) { // TODO Sometimes receiving the setup of the pv as an event and sometimes not.
-            assert testPV != null;
             S newValue = testPV.get(PVAScalar.VALUE_NAME_STRING);
             try {
                 newValue.setValue(input);

@@ -9,6 +9,7 @@ package org.epics.pva.client;
 
 import static org.epics.pva.PVASettings.logger;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -320,6 +321,15 @@ public class PVAChannel extends SearchRequest.Channel implements AutoCloseable
     public Future<PVAStructure> invoke(final PVAStructure request)
     {
         return new RPCRequest(this, request);
+    }
+
+    /**
+     * Get the hostName of the server if the channel is connected.
+     * @return hostName of the server
+     *
+     */
+    public InetSocketAddress getRemoteAddress() throws Exception {
+        return this.getTCP().getRemoteAddress();
     }
 
     /** Called when server confirms channel has been destroyed
