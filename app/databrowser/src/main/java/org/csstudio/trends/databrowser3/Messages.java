@@ -18,7 +18,8 @@ public class Messages
     // --- Keep alphabetically sorted and 'in sync' with messages.properties!
     // ---
     /** Externalized strings */
-    public static String  AddAxis,
+    public static String  AddArchiveSource,
+                         AddAxis,
                          AddFormula,
                          AddFormulaMsg,
                          AddFormula_NameTT,
