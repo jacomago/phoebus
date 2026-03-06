@@ -375,7 +375,11 @@ public class PVAClient implements AutoCloseable
         // Stop searching for missing channels
         search.close();
 
-        // Assume caller has closed channels, wait 2 seconds for that to be confirmed
+        // Close any channels the caller did not close explicitly
+        for (PVAChannel channel : List.copyOf(channels_by_id.values()))
+            channel.close();
+
+        // Wait for server confirmations (connected channels send a DestroyChannelRequest)
         int wait = 20;
         while (! channels_by_id.isEmpty())
         {
@@ -392,7 +396,7 @@ public class PVAClient implements AutoCloseable
             {
                 // Channels_by_id might still contain channels for which
                 // the server is not able to confirm channel deletion.
-                logger.log(Level.WARNING, "PVA Client closed with remaining channels: " + channels_by_id.values());
+                logger.log(Level.FINE, "PVA Client closed with remaining channels: " + channels_by_id.values());
                 break;
             }
         }
