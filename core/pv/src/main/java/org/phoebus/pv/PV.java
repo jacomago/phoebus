@@ -7,6 +7,7 @@
  ******************************************************************************/
 package org.phoebus.pv;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -346,6 +347,11 @@ public class PV
                 logger.log(Level.WARNING, name + " permission update error", ex);
             }
         }
+    }
+
+    public String getRemoteAddress()
+    {
+        return null;
     }
 
     /** Close the PV, releasing underlying resources.

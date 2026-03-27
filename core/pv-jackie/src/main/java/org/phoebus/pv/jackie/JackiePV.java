@@ -759,4 +759,7 @@ public class JackiePV extends PV {
         }
     }
 
+    public String getRemoteAddress() {
+        return channel.getServerAddress().toString();
+    }
 }

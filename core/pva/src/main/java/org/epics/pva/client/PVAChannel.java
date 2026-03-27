@@ -9,6 +9,8 @@ package org.epics.pva.client;
 
 import static org.epics.pva.PVASettings.logger;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
@@ -99,8 +101,7 @@ public class PVAChannel extends SearchRequest.Channel implements AutoCloseable
         return client;
     }
 
-    ClientTCPHandler getTCP() throws Exception
-    {
+    ClientTCPHandler getTCP() {
         final ClientTCPHandler copy = tcp.get();
 
         // Channel Access reacts to read/write access while disconnected
@@ -109,6 +110,15 @@ public class PVAChannel extends SearchRequest.Channel implements AutoCloseable
         if (copy == null)
             throw new IllegalStateException("Channel '" + name + "' is not connected");
         return copy;
+    }
+
+    public InetSocketAddress getRemoteAddress()
+    {
+        try {
+        return this.getTCP().getRemoteAddress();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /** @return Server channel ID */

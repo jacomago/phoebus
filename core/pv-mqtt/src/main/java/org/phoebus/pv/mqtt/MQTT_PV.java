@@ -209,4 +209,8 @@ public class MQTT_PV extends PV
         }
     }
 
+    public String getRemoteAddress() {
+        return conx.myClient.getCurrentServerURI();
+    }
+
 }

@@ -7,6 +7,7 @@
  ******************************************************************************/
 package org.phoebus.pv.opva;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -295,6 +296,11 @@ class PVA_PV extends PV implements ChannelRequester, MonitorRequester
         final PVPutHandler requester = new PVPutHandler(this, new_value);
         channel.createChannelPut(requester, write_request);
         return requester;
+    }
+
+    @Override
+    public String getRemoteAddress() {
+        return channel.getRemoteAddress();
     }
 
     /** {@inheritDoc} */

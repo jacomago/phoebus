@@ -7,6 +7,7 @@
  ******************************************************************************/
 package org.phoebus.pv.pva;
 
+import java.net.InetSocketAddress;
 import java.util.BitSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -205,6 +206,11 @@ public class PVA_PV extends PV
         // akin to a Channel Access put-callback.
         // Return the Future that can be used to await completion
         return channel.write(true, name_helper.getRequest(), new_value);
+    }
+
+    @Override
+    public String getRemoteAddress() {
+        return channel.getRemoteAddress().toString();
     }
 
     @Override

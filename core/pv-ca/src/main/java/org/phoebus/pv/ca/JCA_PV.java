@@ -627,6 +627,11 @@ public class JCA_PV extends PV implements ConnectionListener, MonitorListener, A
         channel.getContext().flushIO();
     }
 
+    @Override
+    public String getRemoteAddress() {
+        return channel.getHostName();
+    }
+
     /** {@inheritDoc} */
     @Override
     protected void close()
