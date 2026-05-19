@@ -1,10 +1,21 @@
-/*******************************************************************************
- * Copyright (c) 2019-2025 Oak Ridge National Laboratory.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- ******************************************************************************/
+/*
+ * Copyright (C) 2025 European Spallation Source ERIC.
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ *
+ */
 package org.epics.pva.combined;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,17 +47,14 @@ import org.junit.jupiter.api.Test;
  *  </ul>
  */
 @SuppressWarnings("nls")
-public class CleanupTest
-{
+public class CleanupTest {
+
     /** Captures WARNING (and above) log records from org.epics.pva.* loggers */
-    private static List<LogRecord> captureWarnings(final Handler[] holder)
-    {
+    private static List<LogRecord> captureWarnings(final Handler[] holder) {
         final List<LogRecord> warnings = new ArrayList<>();
-        final Handler capture = new Handler()
-        {
+        final Handler capture = new Handler() {
             @Override
-            public void publish(final LogRecord r)
-            {
+            public void publish(final LogRecord r) {
                 if (r.getLevel().intValue() >= Level.WARNING.intValue() &&
                     r.getLoggerName() != null &&
                     r.getLoggerName().startsWith("org.epics.pva"))
@@ -60,8 +68,7 @@ public class CleanupTest
         return warnings;
     }
 
-    private static PVAStructure demoData()
-    {
+    private static PVAStructure demoData() {
         return new PVAStructure("demo", "demo_t", new PVADouble("value", 0.0));
     }
 
@@ -69,19 +76,16 @@ public class CleanupTest
     private static String savedAddrList;
     private static boolean savedAutoAddrList;
 
-    private static void setupLocalhost()
-    {
+    private static void setupLocalhost() {
         savedAddrList = PVASettings.EPICS_PVA_ADDR_LIST;
         savedAutoAddrList = PVASettings.EPICS_PVA_AUTO_ADDR_LIST;
-        if (!PVASettings.EPICS_PVA_ENABLE_IPV6)
-        {
+        if (!PVASettings.EPICS_PVA_ENABLE_IPV6) {
             PVASettings.EPICS_PVA_ADDR_LIST = "127.0.0.1";
             PVASettings.EPICS_PVA_AUTO_ADDR_LIST = false;
         }
     }
 
-    private static void restoreSettings()
-    {
+    private static void restoreSettings() {
         PVASettings.EPICS_PVA_ADDR_LIST = savedAddrList;
         PVASettings.EPICS_PVA_AUTO_ADDR_LIST = savedAutoAddrList;
     }
@@ -91,13 +95,11 @@ public class CleanupTest
      *  at WARNING level.  After the fix, this is logged at FINE.
      */
     @Test
-    public void senderDoesNotWarnWhenSocketClosedDuringShutdown() throws Exception
-    {
+    public void senderDoesNotWarnWhenSocketClosedDuringShutdown() throws Exception {
         setupLocalhost();
         final Handler[] holder = new Handler[1];
         final List<LogRecord> warnings = captureWarnings(holder);
-        try
-        {
+        try {
             final PVAServer server = new PVAServer();
             server.createPV("cleanup.test.sender", demoData());
             final PVAClient client = new PVAClient();
@@ -109,9 +111,7 @@ public class CleanupTest
             server.close();
             TimeUnit.MILLISECONDS.sleep(300);
             client.close();
-        }
-        finally
-        {
+        } finally {
             Logger.getLogger("").removeHandler(holder[0]);
             restoreSettings();
         }
@@ -124,30 +124,25 @@ public class CleanupTest
      *  After the fix, remaining channels are closed automatically and the log is at FINE.
      */
     @Test
-    public void clientCloseDoesNotWarnForSearchingChannels() throws Exception
-    {
+    public void clientCloseDoesNotWarnForSearchingChannels() throws Exception {
         setupLocalhost();
         final Handler[] holder = new Handler[1];
         final List<LogRecord> warnings = captureWarnings(holder);
-        try
-        {
+        try {
             final PVAServer server = new PVAServer();
             final ServerPV serverPV = server.createPV("cleanup.test.searching", demoData());
             final PVAClient client = new PVAClient();
             final PVAChannel channel = client.getChannel("cleanup.test.searching");
             channel.connect().get(5, TimeUnit.SECONDS);
 
-            // Remove server PV so the channel starts searching again
+            // Remove server PV so the channel starts searching again.
+            // Previously caused WARNING about remaining SEARCHING channels on client.close().
             serverPV.close();
             TimeUnit.MILLISECONDS.sleep(200);
 
-            // Close client without explicitly closing the channel.
-            // Previously caused WARNING about remaining SEARCHING channels.
             client.close();
             server.close();
-        }
-        finally
-        {
+        } finally {
             Logger.getLogger("").removeHandler(holder[0]);
             restoreSettings();
         }
@@ -160,13 +155,11 @@ public class CleanupTest
      *  After the fix, remaining channels are closed automatically and the log is at FINE.
      */
     @Test
-    public void clientCloseDoesNotWarnForConnectedChannels() throws Exception
-    {
+    public void clientCloseDoesNotWarnForConnectedChannels() throws Exception {
         setupLocalhost();
         final Handler[] holder = new Handler[1];
         final List<LogRecord> warnings = captureWarnings(holder);
-        try
-        {
+        try {
             final PVAServer server = new PVAServer();
             server.createPV("cleanup.test.connected", demoData());
             final PVAClient client = new PVAClient();
@@ -177,9 +170,7 @@ public class CleanupTest
             // Previously caused WARNING about remaining CONNECTED channels.
             client.close();
             server.close();
-        }
-        finally
-        {
+        } finally {
             Logger.getLogger("").removeHandler(holder[0]);
             restoreSettings();
         }
@@ -187,8 +178,7 @@ public class CleanupTest
                    "Unexpected WARNING(s) during teardown: " + warningMessages(warnings));
     }
 
-    private static String warningMessages(final List<LogRecord> records)
-    {
+    private static String warningMessages(final List<LogRecord> records) {
         final StringBuilder sb = new StringBuilder();
         for (LogRecord r : records)
             sb.append("\n  [").append(r.getLoggerName()).append("] ").append(r.getMessage());

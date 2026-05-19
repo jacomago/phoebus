@@ -216,8 +216,8 @@ abstract public class TCPHandler
         }
         catch (Throwable ex)
         {
-            logger.log(running ? Level.WARNING : Level.FINE,
-                       Thread.currentThread().getName() + " exits because of error", ex);
+            if (running)
+                logger.log(Level.WARNING, Thread.currentThread().getName() + " exits because of error", ex);
         }
         logger.log(Level.FINER, Thread.currentThread().getName() + " done.");
         return null;
