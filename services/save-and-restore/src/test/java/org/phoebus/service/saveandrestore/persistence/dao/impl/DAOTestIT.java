@@ -18,10 +18,6 @@
 
 package org.phoebus.service.saveandrestore.persistence.dao.impl;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.indices.DeleteIndexRequest;
-import co.elastic.clients.elasticsearch.indices.ExistsRequest;
-import co.elastic.clients.transport.endpoints.BooleanResponse;
 import org.epics.vtype.Alarm;
 import org.epics.vtype.AlarmSeverity;
 import org.epics.vtype.AlarmStatus;
@@ -29,7 +25,6 @@ import org.epics.vtype.Display;
 import org.epics.vtype.Time;
 import org.epics.vtype.VDouble;
 import org.epics.vtype.VInt;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -53,7 +48,6 @@ import org.phoebus.service.saveandrestore.NodeNotFoundException;
 import org.phoebus.service.saveandrestore.persistence.config.ElasticConfig;
 import org.phoebus.service.saveandrestore.persistence.dao.impl.elasticsearch.ElasticsearchDAO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ContextConfiguration;
@@ -61,7 +55,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,21 +85,6 @@ public class DAOTestIT {
 
     @Autowired
     private ElasticsearchDAO nodeDAO;
-
-    @Autowired
-    private ElasticsearchClient client;
-
-    @Value("${elasticsearch.tree_node.index:test_saveandrestore_configuration}")
-    private String ES_CONFIGURATION_INDEX;
-
-    @Value("${elasticsearch.tree_node.index:test_saveandrestore_tree}")
-    private String ES_TREE_INDEX;
-
-    @Value("${elasticsearch.filter.index:test_saveandrestore_filter}")
-    private String ES_FILTER_INDEX;
-
-    @Value("${elasticsearch.composite_snapshot_node.index:test_saveandrestore_composite_snapshot}")
-    private String ES_COMPOSITE_SNAPSHOT_INDEX;
 
     private static Alarm alarm;
     private static Time time;
@@ -1846,9 +1824,6 @@ public class DAOTestIT {
         assertEquals(2, nodes.size());
     }
 
-    /**
-     * Deletes all objects in all indices.
-     */
     private void clearAllData() {
         List<Node> childNodes = nodeDAO.getChildNodes(Node.ROOT_FOLDER_UNIQUE_ID);
         childNodes.forEach(node -> nodeDAO.deleteNodes(List.of(node.getUniqueId())));
@@ -1856,41 +1831,6 @@ public class DAOTestIT {
     }
 
 
-    @AfterAll
-    public void dropIndices() {
-        try {
-            BooleanResponse exists = client.indices().exists(ExistsRequest.of(e -> e.index(ES_CONFIGURATION_INDEX)));
-            if (exists.value()) {
-                client.indices().delete(
-                        DeleteIndexRequest.of(
-                                c -> c.index(ES_CONFIGURATION_INDEX)));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            BooleanResponse exists = client.indices().exists(ExistsRequest.of(e -> e.index(ES_TREE_INDEX)));
-            if (exists.value()) {
-                client.indices().delete(
-                        DeleteIndexRequest.of(
-                                c -> c.index(ES_TREE_INDEX)));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            BooleanResponse exists = client.indices().exists(ExistsRequest.of(e -> e.index(ES_COMPOSITE_SNAPSHOT_INDEX)));
-            if (exists.value()) {
-                client.indices().delete(
-                        DeleteIndexRequest.of(
-                                c -> c.index(ES_COMPOSITE_SNAPSHOT_INDEX)));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Test
     public void testCheckForPVNameDuplicates() {
